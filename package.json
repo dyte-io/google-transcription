@@ -1,0 +1,80 @@
+{
+  "name": "gapi-transcription",
+  "description": "SDK for audio transcriptions",
+  "author": "https://github.com/dyte-in",
+  "types": "./types/index.d.ts",
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    }
+  },
+  "bugs": {
+    "url": "https://docs.dyte.in/discuss"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "license": "MIT",
+  "keywords": [],
+  "scripts": {
+    "dev": "vite",
+    "lint": "eslint . --ext .ts --ext .js",
+    "lint:fix": "npm run lint -- --fix",
+    "build": "tsc && vite build",
+    "prepare": "is-ci || husky install",
+    "start": "serve -s dist -l 3000 -n",
+    "build:demo": "vite build -c vite.demo.config.ts",
+    "test": "jest --passWithNoTests"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^16.2.1",
+    "@commitlint/config-conventional": "^16.2.1",
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/commit-analyzer": "^9.0.2",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/npm": "^9.0.0",
+    "@semantic-release/release-notes-generator": "^10.0.3",
+    "@types/events": "^3.0.0",
+    "@types/node": "^17.0.18",
+    "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.11.0",
+    "@typescript-eslint/parser": "^5.11.0",
+    "commitizen": "^4.2.4",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^8.8.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.4",
+    "husky": "^7.0.0",
+    "is-ci": "^3.0.1",
+    "jest": "^27.5.1",
+    "semantic-release": "^19.0.2",
+    "serve": "^13.0.2",
+    "ts-node": "^10.5.0",
+    "typedoc": "^0.22.11",
+    "typescript": "^4.5.5",
+    "vite": "^2.8.0"
+  },
+  "dependencies": {
+    "@dytesdk/ui-kit": "^1.14.0",
+    "@dytesdk/web-core": "^0.28.0",
+    "axios": "^0.25.0",
+    "events": "^3.3.0",
+    "loglevel": "^1.8.0",
+    "uuid": "^8.3.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "version": "2.0.1"
+}

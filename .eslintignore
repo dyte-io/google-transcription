@@ -1,0 +1,6 @@
+# typescript
+dist/
+types/
+build/
+node_modules/
+demo/
