@@ -98,18 +98,6 @@ class GoogleSpeechRecognition {
         this.#processor.connect(this.#audioContext.destination);
     }
 
-    #disconnectAudioContext() {
-        if (this.#audio) {
-            this.#audio.disconnect();
-            this.#audio.mediaStream.getTracks().forEach((track) => track.stop());
-            this.#audio = null;
-        }
-
-        if (this.#processor) {
-            this.#processor.disconnect();
-        }
-    }
-
     async #startListening() {
         if (this.#starting) return;
 
@@ -119,7 +107,6 @@ class GoogleSpeechRecognition {
         await this.#connectAudioContext();
 
         if (this.#cancelStart) {
-            this.#disconnectAudioContext();
             this.#cancelStart = false;
         }
 
@@ -130,8 +117,6 @@ class GoogleSpeechRecognition {
         if (this.#starting) {
             this.#cancelStart = true;
         }
-
-        this.#disconnectAudioContext();
 
         if (this.#outputBuffer && this.#outputBuffer.length > 0) {
             const apiResult: Transcription = await speechToText(
@@ -165,7 +150,7 @@ class GoogleSpeechRecognition {
     }
 
     async transcribe() {
-        const func = (interval: any) => {
+        const handleAudioStream = (interval: any) => {
             if (this.#self.audioEnabled) {
                 this.#stopListening();
                 this.#startListening();
@@ -175,10 +160,10 @@ class GoogleSpeechRecognition {
             }
         };
         this.#self.on('audioUpdate', () => {
-            const interval = setInterval(() => {
-                func(interval);
-            }, 5000);
-            func(interval);
+            const streamInterval = setInterval(() => {
+                handleAudioStream(streamInterval);
+            }, 10000);
+            handleAudioStream(streamInterval);
         });
     }
 }
