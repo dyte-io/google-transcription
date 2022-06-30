@@ -162,7 +162,7 @@ class GoogleSpeechRecognition {
         this.#self.on('audioUpdate', () => {
             const streamInterval = setInterval(() => {
                 handleAudioStream(streamInterval);
-            }, 10000);
+            }, 7000);
             handleAudioStream(streamInterval);
         });
     }
