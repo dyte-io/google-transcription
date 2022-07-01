@@ -40,4 +40,32 @@ async function speechToText(
     }
 }
 
+async function googleTranslate(
+    text: string,
+    source: string,
+    target: string,
+    apiKey: string,
+) {
+    const response = await fetch(
+        `https://translation.googleapis.com/language/translate/v2?key=${apiKey}&q=${text}&format=text&model=base&target=${target}&source=${source}`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        },
+    );
+
+    const result = await response.json();
+
+    if (result.error) {
+        throw result.error.message;
+    } else {
+        return result;
+    }
+}
+
 export default speechToText;
+export {
+    googleTranslate,
+};

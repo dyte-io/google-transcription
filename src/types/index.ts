@@ -4,6 +4,9 @@ type GoogleSpeechRecognitionOptions = {
     apiKey: string;
     meeting: DyteClient;
     regionalEndpoint?: string;
+    translate?: boolean;
+    source?: string;
+    target?: string;
 }
 
 type Transcription = {
@@ -14,6 +17,14 @@ type Transcription = {
         languageCode: string;
         resultEndTime: string;
     }[];
+}
+
+type TranslatedText = {
+    data: {
+        translations: {
+            translatedText: string,
+        }[]
+    }
 }
 
 type TranscriptionData = {
@@ -27,6 +38,7 @@ export {
     GoogleSpeechRecognitionOptions,
     Transcription,
     TranscriptionData,
+    TranslatedText,
 };
 
 

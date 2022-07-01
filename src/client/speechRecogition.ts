@@ -2,11 +2,12 @@
 import { DyteParticipants, DyteSelf } from '@dytesdk/web-core';
 import '../utils/logger';
 import { combineBuffers, float32ToInt16 } from '../utils/audio';
-import speechToText from './googleAPIs';
+import speechToText, { googleTranslate } from './googleAPIs';
 import {
     GoogleSpeechRecognitionOptions,
     Transcription,
     TranscriptionData,
+    TranslatedText,
 } from '../types';
 import emitter from '../utils/emitter';
 
@@ -23,6 +24,12 @@ class GoogleSpeechRecognition {
     public regionalEndpoint: string;
 
     public transcriptions: TranscriptionData[];
+
+    public translate: boolean;
+
+    public source: string;
+
+    public target: string;
 
     #outputBuffer: Uint8Array;
 
@@ -54,8 +61,12 @@ class GoogleSpeechRecognition {
         this.#self = options.meeting.self;
         this.#participants = options.meeting.participants;
         this.transcriptions = [];
+        this.translate = options.translate ?? false;
+        this.source = options.source ?? 'en';
+        this.target = options.target ?? 'th';
 
         this.#participants.on('broadcastedMessage', (data) => {
+            if (data.type !== 'newTranscription') return;
             this.transcriptions.push(data.payload);
             emitter().emit('transcription', data.payload);
         });
@@ -138,11 +149,31 @@ class GoogleSpeechRecognition {
             };
 
             if (payload.transcript) {
+                if (this.translate) {
+                    const text = await this.#translate(
+                        payload.transcript,
+                        this.source,
+                        this.target,
+                    );
+
+                    payload.transcript = text ?? payload.transcript;
+                }
                 this.#participants.broadcastMessage('newTranscription', payload);
             }
             return apiResult;
         }
         return null;
+    }
+
+    async #translate(text: string, source: string, target: string) {
+        const translated: TranslatedText = await googleTranslate(
+            text,
+            source,
+            target,
+            this.#apiKey,
+        );
+
+        return translated?.data?.translations[0].translatedText ?? null;
     }
 
     on(eventName: 'transcription', listener: (...args: any[]) => void) {
