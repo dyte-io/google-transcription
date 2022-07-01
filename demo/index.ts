@@ -32,7 +32,7 @@ const init = async () => {
         });
 
         // Listen for transcriptions
-        speech.on('transcription', async (data) => {
+        speech.on('transcription', async () => {
             const transcription = document.getElementById("dyte-transcriptions") as HTMLDivElement;
             const list = speech.transcriptions.slice(-3);
             transcription.innerHTML = '';
