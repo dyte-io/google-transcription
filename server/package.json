@@ -4,8 +4,8 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node --files index.ts"
+    "dev": "tsnd --files index.ts",
+    "test": "ts-node --files stream.spec.ts"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +22,7 @@
   "devDependencies": {
     "@types/express": "^4.17.13",
     "socket.io-client": "^4.5.1",
-    "ts-node": "^10.8.2"
+    "ts-node": "^10.8.2",
+    "ts-node-dev": "^2.0.0"
   }
 }

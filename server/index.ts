@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 // import speech from '@google-cloud/speech';
 import http from 'http';
-import ss from 'socket.io-stream';
+import socketStream from 'socket.io-stream';
 import { Server } from 'socket.io';
 import { pipeline } from 'stream';
 
@@ -19,6 +19,7 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3001;
+const ss = socketStream as any;
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
