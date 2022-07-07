@@ -4,18 +4,21 @@
 require('dotenv').config();
 
 const express = require('express');
-const cors = require('cors');
 const speech = require('@google-cloud/speech');
 
 const app = express();
 const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, {
+    cors: {
+        origin: 'http://localhost:3000',
+        methods: ['GET', 'POST'],
+    },
+});
 
 const PORT = process.env.PORT || 3001;
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cors());
 
 io.on('connection', (client) => {
     console.log('Connected to socket');
