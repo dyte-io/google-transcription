@@ -2,14 +2,14 @@
 import { DyteParticipants, DyteSelf } from '@dytesdk/web-core';
 import '../utils/logger';
 import { combineBuffers, float32ToInt16 } from '../utils/audio';
-import speechToText, { googleTranslate } from './googleAPIs';
+import { googleTranslate } from './googleAPIs';
 import {
     GoogleSpeechRecognitionOptions,
-    Transcription,
     TranscriptionData,
     TranslatedText,
 } from '../types';
 import emitter from '../utils/emitter';
+import speechToText from './wss';
 
 const BUFFER_SIZE = 4096;
 const SAMPLE_RATE = 16000;
@@ -109,62 +109,6 @@ class GoogleSpeechRecognition {
         this.#processor.connect(this.#audioContext.destination);
     }
 
-    async #startListening() {
-        if (this.#starting) return;
-
-        this.#starting = true;
-        this.#outputBuffer = new Uint8Array(0);
-
-        await this.#connectAudioContext();
-
-        if (this.#cancelStart) {
-            this.#cancelStart = false;
-        }
-
-        this.#starting = false;
-    }
-
-    async #stopListening(languageCode = 'en-US') {
-        if (this.#starting) {
-            this.#cancelStart = true;
-        }
-
-        if (this.#outputBuffer && this.#outputBuffer.length > 0) {
-            const apiResult: Transcription = await speechToText(
-                this.#outputBuffer,
-                this.#audioContext.sampleRate,
-                languageCode,
-                this.#apiKey,
-                this.regionalEndpoint,
-            );
-            this.#outputBuffer = new Uint8Array(0);
-
-            const payload: TranscriptionData = {
-                id: this.#self.id,
-                name: this.#self.name,
-                transcript: apiResult?.results
-                    ? apiResult.results[0].alternatives[0]?.transcript
-                    : null,
-                date: new Date(),
-            };
-
-            if (payload.transcript) {
-                if (this.translate) {
-                    const text = await this.#translate(
-                        payload.transcript,
-                        this.source,
-                        this.target,
-                    );
-
-                    payload.transcript = text ?? payload.transcript;
-                }
-                this.#participants.broadcastMessage('newTranscription', payload);
-            }
-            return apiResult;
-        }
-        return null;
-    }
-
     async #translate(text: string, source: string, target: string) {
         const translated: TranslatedText = await googleTranslate(
             text,
@@ -181,20 +125,13 @@ class GoogleSpeechRecognition {
     }
 
     async transcribe() {
-        const handleAudioStream = (interval: any) => {
+        const handleAudioStream = async () => {
             if (this.#self.audioEnabled) {
-                this.#stopListening();
-                this.#startListening();
-            } else {
-                this.#stopListening();
-                clearInterval(interval);
+                speechToText(this.#self.audioTrack);
             }
         };
         this.#self.on('audioUpdate', () => {
-            const streamInterval = setInterval(() => {
-                handleAudioStream(streamInterval);
-            }, 7000);
-            handleAudioStream(streamInterval);
+            handleAudioStream();
         });
     }
 }

@@ -2,7 +2,6 @@ import DyteClient from '@dytesdk/web-core';
 import { defineCustomElements } from '@dytesdk/ui-kit/loader/index.es2017.js';
 import GoogleSpeechRecognition from '../src';
 import { TranscriptionData } from '../src/types';
-import { io } from 'socket.io-client';
 
 defineCustomElements();
 
@@ -21,11 +20,6 @@ const init = async () => {
                 audio: false,
                 video: false,
             },
-        });
-
-        const socket = io('ws://localhost:3001');
-        socket.on('connect', () => {
-            socket.emit('audioStream', 'Hello World from client');
         });
 
         // Initialize speech client
