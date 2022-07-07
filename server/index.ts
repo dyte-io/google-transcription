@@ -27,6 +27,7 @@ io.on('connection', (socket) => {
     console.log('Connected to socket:', socket.id);
 
     ss(socket).on('audioStream', (stream: any) => {
+        console.log(stream);
         pipeline(stream, process.stdout, (err) => console.error(err));
         // const speechClient = new speech.SpeechClient({
         //     credentials: {
