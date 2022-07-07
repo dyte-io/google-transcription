@@ -44,7 +44,8 @@
         "no-undef": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "class-methods-use-this": "off",
-        "no-useless-constructor": "off"
+        "no-useless-constructor": "off",
+        "no-console": "off"
     },
     "overrides": [
         {

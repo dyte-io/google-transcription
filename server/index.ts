@@ -1,14 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-var-requires */
-require('dotenv').config();
+import dotenv from 'dotenv';
+import express from 'express';
+// import speech from '@google-cloud/speech';
+import http from 'http';
+import ss from 'socket.io-stream';
+import { Server } from 'socket.io';
+import { pipeline } from 'stream';
 
-const express = require('express');
-const speech = require('@google-cloud/speech');
+dotenv.config();
 
 const app = express();
-const server = require('http').createServer(app);
-const io = require('socket.io')(server, {
+const server = http.createServer(app);
+
+const io = new Server(server, {
     cors: {
         origin: 'http://localhost:3000',
         methods: ['GET', 'POST'],
@@ -20,10 +23,11 @@ const PORT = process.env.PORT || 3001;
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-io.on('connection', (client) => {
-    console.log('Connected to socket');
-    client.on('audioStream', (stream) => {
-        console.log(stream);
+io.on('connection', (socket) => {
+    console.log('Connected to socket:', socket.id);
+
+    ss(socket).on('audioStream', (stream: any) => {
+        pipeline(stream, process.stdout, (err) => console.error(err));
         // const speechClient = new speech.SpeechClient({
         //     credentials: {
         //         project_id: 'long-victor-290219',
