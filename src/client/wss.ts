@@ -44,4 +44,5 @@ export async function speechToText(audioTrack: MediaStreamTrack) {
 
 export async function stopSpeechToText() {
     context.close();
+    socket.emit('stopStreaming');
 }

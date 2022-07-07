@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
-// import speech from '@google-cloud/speech';
+import speech from '@google-cloud/speech';
 import http from 'http';
 import { Server } from 'socket.io';
 
@@ -21,41 +21,74 @@ const PORT = process.env.PORT || 3001;
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+const speechClient = new speech.SpeechClient({
+    credentials: {
+        private_key: process.env.PRIVATE_KEY,
+        client_email: process.env.CLIENT_EMAIL,
+    },
+});
+
+const encoding = 'LINEAR16' as const;
+const sampleRateHertz = 16000;
+const languageCode = 'en-US';
+
+const request = {
+    config: {
+        encoding,
+        sampleRateHertz,
+        languageCode,
+        profanityFilter: false,
+        enableWordTimeOffsets: true,
+    },
+    interimResults: true,
+};
+
 io.on('connection', (socket) => {
     console.log('Connected to socket:', socket.id);
+    let recognizeStream: any = null;
+
+    function stopRecognitionStream() {
+        if (recognizeStream) {
+            recognizeStream.end();
+        }
+        recognizeStream = null;
+    }
+
+    function startRecognitionStream(client: any) {
+        recognizeStream = speechClient
+            .streamingRecognize(request)
+            .on('error', console.error)
+            .on('readable', console.log)
+            .on('data', (data) => {
+                process.stdout.write(
+                    data.results[0] && data.results[0].alternatives[0]
+                        ? `Transcription: ${data.results[0].alternatives[0].transcript}\n`
+                        : '\n\nReached transcription time limit, press Ctrl+C\n',
+                );
+                socket.emit('speechData', data);
+
+                if (data.results[0] && data.results[0].isFinal) {
+                    stopRecognitionStream();
+                    startRecognitionStream(client);
+                }
+            });
+    }
 
     socket.on('startStreaming', () => {
-        console.log(socket.id);
+        console.log('Started streaming', socket.id);
+        startRecognitionStream(request);
+    });
+
+    socket.on('stopStreaming', () => {
+        console.log('Stream stopped', socket.id);
+        stopRecognitionStream();
     });
 
     socket.on('audioStream', (buffer: any) => {
-        console.log(buffer);
-        // const speechClient = new speech.SpeechClient({
-        //     credentials: {
-        //         project_id: 'long-victor-290219',
-        //         private_key_id: process.env.PRIVATE_KEY_ID,
-        //         private_key: process.env.PRIVATE_KEY,
-        //         client_email: process.env.CLIENT_EMAIL,
-        //     },
-        // });
-
-        // const request = {
-        //     config: {
-        //         encoding: 'LINEAR16',
-        //         sampleRateHertz: 16000,
-        //         languageCode: 'en-US',
-        //     },
-        //     interimResults: true,
-        // };
-
-        // const recognizeStream = speechClient
-        //     .streamingRecognize(request)
-        //     .on('error', console.error)
-        //     .on('data', (data) => {
-        //         console.log(data);
-        //     });
-
-        // console.log(recognizeStream, stream);
+        if (Math.random() < 0.2) {
+            console.log('Incoming audioStream', buffer);
+        }
+        recognizeStream?.write(buffer);
     });
 });
 
