@@ -9,7 +9,7 @@ import {
     TranslatedText,
 } from '../types';
 import emitter from '../utils/emitter';
-import speechToText from './wss';
+import { speechToText, stopSpeechToText } from './wss';
 
 const BUFFER_SIZE = 4096;
 const SAMPLE_RATE = 16000;
@@ -128,7 +128,10 @@ class GoogleSpeechRecognition {
         const handleAudioStream = async () => {
             if (this.#self.audioEnabled) {
                 speechToText(this.#self.audioTrack);
+                return;
             }
+
+            stopSpeechToText();
         };
         this.#self.on('audioUpdate', () => {
             handleAudioStream();

@@ -66,6 +66,7 @@
     "base64-js": "^1.5.1",
     "events": "^3.3.0",
     "loglevel": "^1.8.0",
+    "process": "^0.11.10",
     "socket.io-client": "^4.5.1",
     "socket.io-stream": "^0.9.1",
     "util": "^0.12.4",

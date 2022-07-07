@@ -4,3 +4,4 @@ types/
 build/
 node_modules/
 demo/
+**/*/recorderWorkletProcessor.js

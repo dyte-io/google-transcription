@@ -2,9 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 // import speech from '@google-cloud/speech';
 import http from 'http';
-import socketStream from 'socket.io-stream';
 import { Server } from 'socket.io';
-import { pipeline } from 'stream';
 
 dotenv.config();
 
@@ -19,7 +17,6 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3001;
-const ss = socketStream as any;
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -27,9 +24,12 @@ app.use(express.json());
 io.on('connection', (socket) => {
     console.log('Connected to socket:', socket.id);
 
-    ss(socket).on('audioStream', (stream: any) => {
-        console.log(stream);
-        pipeline(stream, process.stdout, (err) => console.error(err));
+    socket.on('startStreaming', () => {
+        console.log(socket.id);
+    });
+
+    socket.on('audioStream', (buffer: any) => {
+        console.log(buffer);
         // const speechClient = new speech.SpeechClient({
         //     credentials: {
         //         project_id: 'long-victor-290219',
