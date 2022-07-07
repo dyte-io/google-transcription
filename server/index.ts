@@ -28,6 +28,8 @@ const speechClient = new speech.SpeechClient({
     },
 });
 
+const streams: { [id: string]: any } = {};
+
 const encoding = 'LINEAR16' as const;
 const sampleRateHertz = 16000;
 const languageCode = 'en-US';
@@ -45,38 +47,40 @@ const request = {
 
 io.on('connection', (socket) => {
     console.log('Connected to socket:', socket.id);
-    let recognizeStream: any = null;
 
     function stopRecognitionStream() {
+        let recognizeStream = streams[socket.id];
         if (recognizeStream) {
             recognizeStream.end();
         }
         recognizeStream = null;
     }
 
-    function startRecognitionStream(client: any) {
-        recognizeStream = speechClient
+    function startRecognitionStream() {
+        console.log('client: ', socket);
+        const recognizeStream = speechClient
             .streamingRecognize(request)
             .on('error', console.error)
-            .on('readable', console.log)
             .on('data', (data) => {
-                process.stdout.write(
-                    data.results[0] && data.results[0].alternatives[0]
-                        ? `Transcription: ${data.results[0].alternatives[0].transcript}\n`
-                        : '\n\nReached transcription time limit, press Ctrl+C\n',
-                );
+                console.log('Transcription: ', data);
+                // process.stdout.write(
+                //     data.results[0] && data.results[0].alternatives[0]
+                //         ? `Transcription: ${data.results[0].alternatives[0].transcript}\n`
+                //         : '\n\nReached transcription time limit, press Ctrl+C\n',
+                // );
                 socket.emit('speechData', data);
 
                 if (data.results[0] && data.results[0].isFinal) {
                     stopRecognitionStream();
-                    startRecognitionStream(client);
+                    startRecognitionStream();
                 }
             });
+        streams[socket.id] = recognizeStream;
     }
 
     socket.on('startStreaming', () => {
         console.log('Started streaming', socket.id);
-        startRecognitionStream(request);
+        startRecognitionStream();
     });
 
     socket.on('stopStreaming', () => {
@@ -85,10 +89,13 @@ io.on('connection', (socket) => {
     });
 
     socket.on('audioStream', (buffer: any) => {
-        if (Math.random() < 0.2) {
-            console.log('Incoming audioStream', buffer);
+        const recognizeStream = streams[socket.id];
+        const rand = Math.random() < 0.2;
+
+        const resp = recognizeStream?.write(buffer);
+        if (rand) {
+            console.log('isWrite', resp);
         }
-        recognizeStream?.write(buffer);
     });
 });
 
