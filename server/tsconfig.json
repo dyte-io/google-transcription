@@ -14,7 +14,8 @@
         "declaration": true
     },
     "include": [
-        "**/*.ts"
+        "**/*.ts",
+        "**/*.d.ts"
     ],
     "exclude": [
         "src/**/*.spec.ts",
