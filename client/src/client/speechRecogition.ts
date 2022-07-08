@@ -63,6 +63,9 @@ class GoogleSpeechRecognition {
 
             this.#socketClient.stopRecording();
         };
+
+        handleAudioStream();
+
         this.#self.on('audioUpdate', () => {
             handleAudioStream();
         });
