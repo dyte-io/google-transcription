@@ -25,9 +25,9 @@ const init = async () => {
         // Initialize speech client
         const speech = new GoogleSpeechRecognition({
             meeting,
-            translate: true,
             target: 'th',
-            source: 'en',
+            source: 'en-US',
+            baseUrl: 'http://localhost:3001',
         });
 
         // Listen for transcriptions
@@ -42,7 +42,7 @@ const init = async () => {
 
                 const text = document.createElement('span');
                 text.classList.add('dyte-transcription-text');
-                text.innerText = item.transcript;
+                text.innerText = item.transcript.trim() !== '' ? item.transcript : '...';
 
                 const container = document.createElement('span');
                 container.classList.add('dyte-transcription-line');

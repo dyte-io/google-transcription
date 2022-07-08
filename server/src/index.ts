@@ -80,11 +80,16 @@ io.on('connection', (socket) => {
         streams[socket.id] = stream;
     }
 
-    socket.on('startStreaming', () => {
+    socket.on('startStreaming', (data) => {
+        initialRequest.streamingConfig.audioConfig = {
+            audioEncoding: encoding,
+            sourceLanguageCode: data.source,
+            targetLanguageCode: data.target,
+        };
         console.log('Started streaming', socket.id);
         startRecognitionStream();
         const recognizeStream = streams[socket.id];
-        recognizeStream.write(initialRequest);
+        recognizeStream?.write(initialRequest);
     });
 
     socket.on('stopStreaming', () => {
