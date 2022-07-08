@@ -37,7 +37,6 @@ class GoogleSpeechRecognition {
         );
 
         this.#participants.on('broadcastedMessage', (data) => {
-            console.log('rec: ', data);
             if (data.type !== 'newTranscription') return;
             const transcriptionPayload: TranscriptionData = {
                 name: this.#self.name,
