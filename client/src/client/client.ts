@@ -37,7 +37,7 @@ export default class SocketClient {
             latencyHint: 'interactive',
         });
 
-        await this.#context.audioWorklet.addModule('./src/utils/recorderWorkletProcessor.js');
+        await this.#context.audioWorklet.addModule('https://cdn.jsdelivr.net/npm/@dytesdk/google-transcription@0.0.5/dist/recorderWorkletProcessor.js');
         this.#context.resume();
 
         this.#globalStream = new MediaStream();
