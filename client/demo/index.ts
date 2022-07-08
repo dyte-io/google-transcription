@@ -1,7 +1,6 @@
 import DyteClient from '@dytesdk/web-core';
 import { defineCustomElements } from '@dytesdk/ui-kit/loader/index.es2017.js';
-import GoogleSpeechRecognition from '../src';
-import { TranscriptionData } from '../src/types';
+import GoogleSpeechRecognition, { TranscriptionData } from '..';
 
 defineCustomElements();
 
