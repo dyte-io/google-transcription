@@ -1,3 +1,4 @@
+/* eslint-disable  */
 /**
   An in-place replacement for ScriptProcessorNode using AudioWorklet
 */

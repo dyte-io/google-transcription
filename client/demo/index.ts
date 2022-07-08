@@ -1,5 +1,5 @@
 import DyteClient from '@dytesdk/web-core';
-import { defineCustomElements } from '@dytesdk/ui-kit/loader/index.es2017.js';
+import { defineCustomElements } from '@dytesdk/ui-kit/loader/index.es2017';
 import GoogleSpeechRecognition from '../src';
 import { TranscriptionData } from '../src/types';
 
@@ -32,7 +32,7 @@ const init = async () => {
 
         // Listen for transcriptions
         speech.on('transcription', async () => {
-            const transcription = document.getElementById("dyte-transcriptions") as HTMLDivElement;
+            const transcription = document.getElementById('dyte-transcriptions') as HTMLDivElement;
             const list = speech.transcriptions.slice(-3);
             transcription.innerHTML = '';
             list.forEach((item: TranscriptionData) => {
@@ -50,7 +50,7 @@ const init = async () => {
                 container.appendChild(text);
 
                 transcription.appendChild(container);
-            })
+            });
         });
 
         // Initialize transcriptions

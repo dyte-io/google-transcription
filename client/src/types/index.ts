@@ -1,4 +1,4 @@
-import DyteClient from "@dytesdk/web-core";
+import DyteClient from '@dytesdk/web-core';
 
 type GoogleSpeechRecognitionOptions = {
     meeting: DyteClient;
@@ -38,5 +38,3 @@ export {
     TranscriptionData,
     TranslatedText,
 };
-
-
