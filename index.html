@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Transcription Demo</title>
+    <style>
+        body {
+          height: 100vh;
+          width: 100vw;
+        }
+  
+        #dyte-transcriptions{
+          position: absolute;
+          z-index: 99999;
+          bottom: 15%;
+          width: 100%;
+          display:flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items:center;
+        }
+  
+        .dyte-transcription-line{
+          display: block;
+          max-width: 80%;
+          text-align: center !important;
+        }
+        .dyte-transcription-speaker{
+          font-weight: 500;
+          color: orange;
+        }
+        .dyte-transcription-text{
+          color: white;
+        }
+      </style>
+</head>
+<body>
+    <dyte-meeting id="my-meeting" show-setup-screen="true"></dyte-meeting>
+    <div id="dyte-transcriptions"></div>
+    <script type="module">
+        import DyteClient from '@dytesdk/web-core';
+        import { defineCustomElements } from '@dytesdk/ui-kit/loader/index.es2017.js';
+        import GoogleSpeechRecognition from '@dytesdk/google-transcription';
+        defineCustomElements();
+
+        const init = async () => {
+            try {
+                const roomName = 'cgwpud-uszikg';
+                const { authToken } = await (
+                    await fetch('https://api.staging.dyte.in/auth/anonymous')
+                ).json();
+
+                const meeting = await DyteClient.init({
+                    authToken,
+                    roomName,
+                    apiBase: 'https://api.staging.dyte.in',
+                    defaults: {
+                        audio: true,
+                        video: false,
+                    },
+                });
+
+                const speech = new GoogleSpeechRecognition({
+                    meeting,
+                    target: 'th',
+                    source: 'en-US',
+                    baseUrl: 'https://gtranscription.dyte.in',
+                });
+
+                speech.on('transcription', async (data) => {
+                    const transcription = document.getElementById('dyte-transcriptions');
+                    const list = speech.transcriptions.slice(-3);
+                    transcription.innerHTML = '';
+                    list.forEach((item) => {
+                        const speaker = document.createElement('span');
+                        speaker.classList.add('dyte-transcription-speaker');
+                        speaker.innerText = `${item.name}: `;
+
+                        const text = document.createElement('span');
+                        text.classList.add('dyte-transcription-text');
+                        text.innerText = item.transcript.trim() !== '' ? item.transcript : '...';
+
+                        const container = document.createElement('span');
+                        container.classList.add('dyte-transcription-line');
+                        container.appendChild(speaker);
+                        container.appendChild(text);
+
+                        transcription.appendChild(container);
+                    });
+                });
+
+                speech.transcribe();
+
+                document.getElementById('my-meeting').meeting = meeting;
+            } catch (e) {
+                console.log(e);
+            }
+        };
+
+        init();
+      </script>
+</body>
+</html>

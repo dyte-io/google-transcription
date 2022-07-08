@@ -1,0 +1,26 @@
+{
+  "name": "google-transcription-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@dytesdk/google-transcription": "^0.0.9",
+    "@dytesdk/ui-kit": "^1.14.0",
+    "@dytesdk/web-core": "^0.28.0",
+    "events": "^3.3.0",
+    "loglevel": "^1.8.0",
+    "socket.io-client": "^4.5.1",
+    "typescript": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.3",
+    "vite": "^2.9.14"
+  }
+}
