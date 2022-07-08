@@ -11,7 +11,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:3000',
+        origin: '*',
         methods: ['GET', 'POST'],
     },
 });
@@ -62,12 +62,11 @@ io.on('connection', (socket) => {
             .streamingRecognize(request)
             .on('error', console.error)
             .on('data', (data) => {
-                console.log('Transcription: ', data);
-                // process.stdout.write(
-                //     data.results[0] && data.results[0].alternatives[0]
-                //         ? `Transcription: ${data.results[0].alternatives[0].transcript}\n`
-                //         : '\n\nReached transcription time limit, press Ctrl+C\n',
-                // );
+                process.stdout.write(
+                    data.results[0] && data.results[0].alternatives[0]
+                        ? `Transcription: ${data.results[0].alternatives[0].transcript}\n`
+                        : '\n\nReached transcription time limit, press Ctrl+C\n',
+                );
                 socket.emit('speechData', data);
 
                 if (data.results[0] && data.results[0].isFinal) {
@@ -91,6 +90,10 @@ io.on('connection', (socket) => {
     socket.on('audioStream', (buffer: any) => {
         const recognizeStream = streams[socket.id];
         const rand = Math.random() < 0.2;
+
+        if (rand) {
+            console.log(buffer);
+        }
 
         const resp = recognizeStream?.write(buffer);
         if (rand) {
