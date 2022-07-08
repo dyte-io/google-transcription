@@ -89,16 +89,7 @@ io.on('connection', (socket) => {
 
     socket.on('audioStream', (buffer: any) => {
         const recognizeStream = streams[socket.id];
-        const rand = Math.random() < 0.2;
-
-        if (rand) {
-            console.log(buffer);
-        }
-
-        const resp = recognizeStream?.write(buffer);
-        if (rand) {
-            console.log('isWrite', resp);
-        }
+        recognizeStream?.write(buffer);
     });
 });
 

@@ -1,7 +1,6 @@
 import DyteClient from "@dytesdk/web-core";
 
 type GoogleSpeechRecognitionOptions = {
-    apiKey: string;
     meeting: DyteClient;
     regionalEndpoint?: string;
     translate?: boolean;

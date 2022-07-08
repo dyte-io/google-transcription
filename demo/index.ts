@@ -7,7 +7,7 @@ defineCustomElements();
 
 const init = async () => {
     try {
-        const roomName = 'ssriks-upmjmj';
+        const roomName = 'cgwpud-uszikg';
         const { authToken } = await (
             await fetch('https://api.staging.dyte.in/auth/anonymous')
         ).json();
@@ -24,7 +24,6 @@ const init = async () => {
 
         // Initialize speech client
         const speech = new GoogleSpeechRecognition({
-            apiKey: (import.meta as any).env.VITE_API_KEY,
             meeting,
             translate: true,
             target: 'th',
