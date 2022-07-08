@@ -6,42 +6,47 @@ import {
     TranscriptionData,
 } from '../types';
 import emitter from '../utils/emitter';
-import { startRecording, stopRecording } from './client';
+import SocketClient from './client';
 
 class GoogleSpeechRecognition {
-    /**
-     * @description Optionally define a regional endpoint:
-     * https://cloud.google.com/speech-to-text/docs/endpoints
-     * If this parameter is not defined, the US endpoint will be used by default.
-     * @example 'https://eu-speech.googleapis.com'
-     */
-    public regionalEndpoint: string;
-
     public transcriptions: TranscriptionData[];
-
-    public translate: boolean;
 
     public source: string;
 
     public target: string;
 
+    public baseUrl: string;
+
     #self: DyteSelf;
+
+    #socketClient: SocketClient;
 
     #participants: DyteParticipants;
 
     constructor(options: GoogleSpeechRecognitionOptions) {
-        this.regionalEndpoint = options.regionalEndpoint ?? 'https://speech.googleapis.com';
         this.#self = options.meeting.self;
+        this.baseUrl = options.baseUrl;
         this.#participants = options.meeting.participants;
         this.transcriptions = [];
-        this.translate = options.translate ?? false;
         this.source = options.source ?? 'en';
         this.target = options.target ?? 'th';
 
+        this.#socketClient = new SocketClient(
+            this.#participants,
+            this.baseUrl,
+        );
+
         this.#participants.on('broadcastedMessage', (data) => {
+            console.log('rec: ', data);
             if (data.type !== 'newTranscription') return;
-            this.transcriptions.push(data.payload);
-            emitter().emit('transcription', data.payload);
+            const transcriptionPayload: TranscriptionData = {
+                name: this.#self.name,
+                transcript: data.payload,
+                id: this.#self.id,
+                date: new Date(),
+            };
+            this.transcriptions.push(transcriptionPayload);
+            emitter().emit('transcription', transcriptionPayload);
         });
     }
 
@@ -52,11 +57,11 @@ class GoogleSpeechRecognition {
     async transcribe() {
         const handleAudioStream = async () => {
             if (this.#self.audioEnabled) {
-                startRecording(this.#self.audioTrack);
+                this.#socketClient.startRecording(this.#self.audioTrack, this.source, this.target);
                 return;
             }
 
-            stopRecording();
+            this.#socketClient.stopRecording();
         };
         this.#self.on('audioUpdate', () => {
             handleAudioStream();

@@ -1,7 +1,7 @@
 {
-  "name": "gapi-transcription",
-  "version": "2.0.1",
-  "description": "SDK for audio transcriptions.",
+  "name": "@dytesdk/google-transcription",
+  "version": "0.0.1",
+  "description": "Package for audio transcriptions using Google Media Translation APIs.",
   "author": "https://github.com/dyte-in",
   "types": "./types/index.d.ts",
   "main": "./dist/index.umd.js",

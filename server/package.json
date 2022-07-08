@@ -5,12 +5,13 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsnd --files src/index.ts",
-    "test": "ts-node --files src/stream.spec.ts"
+    "test": "jest --passWithNoTests"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/media-translation": "^3.0.0",
     "@google-cloud/speech": "^4.10.2",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",

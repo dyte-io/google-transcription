@@ -1,11 +1,10 @@
-import DyteClient from "@dytesdk/web-core";
+import DyteClient from '@dytesdk/web-core';
 
 type GoogleSpeechRecognitionOptions = {
     meeting: DyteClient;
-    regionalEndpoint?: string;
-    translate?: boolean;
-    source?: string;
-    target?: string;
+    source: string;
+    target: string;
+    baseUrl: string;
 }
 
 type Transcription = {
@@ -39,5 +38,3 @@ export {
     TranscriptionData,
     TranslatedText,
 };
-
-

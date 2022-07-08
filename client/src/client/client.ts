@@ -1,61 +1,73 @@
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
-const socket = io('ws://localhost:3001');
+export default class SocketClient {
+    #socket: Socket;
 
-let context: AudioContext;
-let processor: AudioWorkletNode;
-let input: MediaStreamAudioSourceNode;
-let globalStream: MediaStream;
+    #context: AudioContext;
 
-function microphoneProcess(buffer: any) {
-    socket.emit('audioStream', buffer);
+    #processor: AudioWorkletNode;
+
+    #input: MediaStreamAudioSourceNode;
+
+    #globalStream: MediaStream;
+
+    constructor(participants: any, baseUrl: string) {
+        this.#socket = io(baseUrl);
+
+        this.#socket.on('speechData', (data) => {
+            participants.broadcastMessage('newTranscription', data);
+        });
+
+        window.onbeforeunload = () => {
+            this.#socket.emit('endGoogleCloudStream', '');
+        };
+    }
+
+    microphoneProcess(buffer: any) {
+        this.#socket.emit('audioStream', buffer);
+    }
+
+    async startRecording(audioTrack: MediaStreamTrack, source: string, target: string) {
+        this.#socket.emit('startStreaming', {
+            source,
+            target,
+        });
+
+        this.#context = new AudioContext({
+            latencyHint: 'interactive',
+        });
+
+        await this.#context.audioWorklet.addModule('./src/utils/recorderWorkletProcessor.js');
+        this.#context.resume();
+
+        this.#globalStream = new MediaStream();
+        this.#globalStream.addTrack(audioTrack);
+        this.#input = this.#context.createMediaStreamSource(this.#globalStream);
+        this.#processor = new window.AudioWorkletNode(
+            this.#context,
+            'recorder.worklet',
+        );
+        this.#processor.connect(this.#context.destination);
+        this.#context.resume();
+        this.#input.connect(this.#processor);
+        this.#processor.port.onmessage = (e) => {
+            const audioData = e.data;
+            this.microphoneProcess(audioData);
+        };
+    }
+
+    stopRecording() {
+        this.#socket.emit('stopStreaming', '');
+
+        const track = this.#globalStream.getTracks()[0];
+        track.stop();
+
+        this.#input.disconnect(this.#processor);
+        this.#processor.disconnect(this.#context.destination);
+        this.#context.close().then(() => {
+            this.#input = null;
+            this.#processor = null;
+            this.#context = null;
+        });
+    }
 }
-
-export async function startRecording(audioTrack: MediaStreamTrack) {
-    socket.emit('startStreaming', '');
-
-    context = new AudioContext({
-        latencyHint: 'interactive',
-    });
-
-    await context.audioWorklet.addModule('./src/utils/recorderWorkletProcessor.js');
-    context.resume();
-
-    globalStream = new MediaStream();
-    globalStream.addTrack(audioTrack);
-    input = context.createMediaStreamSource(globalStream);
-    processor = new window.AudioWorkletNode(
-        context,
-        'recorder.worklet',
-    );
-    processor.connect(context.destination);
-    context.resume();
-    input.connect(processor);
-    processor.port.onmessage = (e) => {
-        const audioData = e.data;
-        microphoneProcess(audioData);
-    };
-}
-
-export function stopRecording() {
-    socket.emit('stopStreaming', '');
-
-    const track = globalStream.getTracks()[0];
-    track.stop();
-
-    input.disconnect(processor);
-    processor.disconnect(context.destination);
-    context.close().then(() => {
-        input = null;
-        processor = null;
-        context = null;
-    });
-}
-
-socket.on('speechData', (data) => {
-    console.log(data.results[0].alternatives[0].transcript);
-});
-
-window.onbeforeunload = () => {
-    socket.emit('endGoogleCloudStream', '');
-};
