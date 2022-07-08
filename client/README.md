@@ -45,7 +45,7 @@ npm i @dytesdk/google-transcription
 <!-- USAGE EXAMPLES -->
 ## Usage
 A speech object can be created using `GoogleSpeechRecognition` class.
-```
+```ts
 import GoogleSpeechRecognition, { TranscriptionData } from '@dytesdk/google-transcription';
 
 const speech = new GoogleSpeechRecognition({
