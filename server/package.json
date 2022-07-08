@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsnd --files src/index.ts",
-    "test": "ts-node --files src/stream.spec.ts"
+    "test": "jest --passWithNoTests"
   },
   "keywords": [],
   "author": "",

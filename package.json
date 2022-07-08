@@ -17,6 +17,7 @@
         "dev:server": "npm run dev -w server",
         "lint": "npm run lint --ws --if-present",
         "lint:fix": "npm run lint --if-present -- --fix",
+        "build": "npm run build:client",
         "build:client": "npm run build -w client --if-present",
         "prepare": "is-ci || husky install",
         "start:client": "npm start -w client --if-present",
