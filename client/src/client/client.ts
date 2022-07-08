@@ -59,9 +59,6 @@ export default class SocketClient {
     stopRecording() {
         this.#socket.emit('stopStreaming', '');
 
-        const track = this.#globalStream.getTracks()[0];
-        track.stop();
-
         this.#input.disconnect(this.#processor);
         this.#processor.disconnect(this.#context.destination);
         this.#context.close().then(() => {
