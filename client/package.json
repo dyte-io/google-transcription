@@ -1,5 +1,6 @@
 {
   "name": "gapi-transcription",
+  "version": "2.0.1",
   "description": "SDK for audio transcriptions.",
   "author": "https://github.com/dyte-in",
   "types": "./types/index.d.ts",
@@ -28,10 +29,11 @@
   "dependencies": {
     "@dytesdk/ui-kit": "^1.14.0",
     "@dytesdk/web-core": "^0.28.0",
-    "@google-cloud/speech": "^4.10.2",
     "events": "^3.3.0",
     "loglevel": "^1.8.0",
     "socket.io-client": "^4.5.1"
   },
-  "version": "2.0.1"
+  "devDependencies": {
+    "vite": "^2.9.13"
+  }
 }

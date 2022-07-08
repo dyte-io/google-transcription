@@ -4,8 +4,8 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsnd --files index.ts",
-    "test": "ts-node --files stream.spec.ts"
+    "dev": "tsnd --files src/index.ts",
+    "test": "ts-node --files src/stream.spec.ts"
   },
   "keywords": [],
   "author": "",
@@ -15,14 +15,13 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
-    "node-record-lpcm16": "^1.0.1",
-    "socket.io": "^4.5.1",
-    "socket.io-stream": "^0.9.1"
+    "socket.io": "^4.5.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
     "socket.io-client": "^4.5.1",
     "ts-node": "^10.8.2",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "socket.io-stream": "^0.9.1"
   }
 }
