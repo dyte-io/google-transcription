@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { TranscriptionData } from '../types';
 
 export default class SocketClient {
     #socket: Socket;
@@ -11,11 +12,18 @@ export default class SocketClient {
 
     #globalStream: MediaStream;
 
-    constructor(participants: any, baseUrl: string) {
+    constructor(participants: any, self: any, baseUrl: string) {
         this.#socket = io(baseUrl);
 
         this.#socket.on('speechData', (data) => {
-            participants.broadcastMessage('newTranscription', data);
+            const transcriptionPayload: TranscriptionData = {
+                name: self.name,
+                id: self.id,
+                transcript: data,
+                date: new Date(),
+            };
+            console.log(data, transcriptionPayload);
+            participants.broadcastMessage('newTranscription', transcriptionPayload);
         });
 
         window.onbeforeunload = () => {

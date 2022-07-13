@@ -33,19 +33,14 @@ class GoogleSpeechRecognition {
 
         this.#socketClient = new SocketClient(
             this.#participants,
+            this.#self,
             this.baseUrl,
         );
 
         this.#participants.on('broadcastedMessage', (data) => {
             if (data.type !== 'newTranscription') return;
-            const transcriptionPayload: TranscriptionData = {
-                name: this.#self.name,
-                transcript: data.payload,
-                id: this.#self.id,
-                date: new Date(),
-            };
-            this.transcriptions.push(transcriptionPayload);
-            emitter().emit('transcription', transcriptionPayload);
+            this.transcriptions.push(data.payload);
+            emitter().emit('transcription', data.payload);
         });
     }
 
