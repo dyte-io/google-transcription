@@ -67,9 +67,9 @@ export default class SocketClient {
     stopRecording() {
         this.#socket.emit('stopStreaming', '');
 
-        this.#input.disconnect(this.#processor);
-        this.#processor.disconnect(this.#context.destination);
-        this.#context.close().then(() => {
+        this.#input?.disconnect(this.#processor);
+        this.#processor?.disconnect(this.#context.destination);
+        this.#context?.close().then(() => {
             this.#input = null;
             this.#processor = null;
             this.#context = null;
