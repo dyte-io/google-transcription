@@ -1,9 +1,11 @@
+/* eslint-disable no-restricted-syntax */
 import dotenv from 'dotenv';
 import express from 'express';
 // import speech from '@google-cloud/speech';
 import http from 'http';
 import { Server } from 'socket.io';
 import { SpeechTranslationServiceClient } from '@google-cloud/media-translation';
+import { v2 as GoogleTranslate } from '@google-cloud/translate';
 
 dotenv.config();
 
@@ -18,34 +20,46 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3001;
+const projectId = 'long-victor-290219';
+const credentials = {
+    private_key: process.env.PRIVATE_KEY,
+    client_email: process.env.CLIENT_EMAIL,
+};
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 const translationClient = new SpeechTranslationServiceClient({
-    credentials: {
-        private_key: process.env.PRIVATE_KEY,
-        client_email: process.env.CLIENT_EMAIL,
-    },
+    credentials,
 });
+
+const translate = new GoogleTranslate.Translate({ projectId, credentials });
 
 const streams: { [id: string]: any } = {};
 const encoding = 'linear16' as const;
+let useTranslate = false;
 
-const initialRequest: any = {
-    streamingConfig: {
-        audioConfig: {
-            audioEncoding: encoding,
-            sourceLanguageCode: 'en-US',
-            targetLanguageCode: 'th',
-        },
-        singleUtterance: true,
-    },
-    audioContent: null,
-};
+async function translateText(text: string, targetLangCode: string) {
+    const [translation] = await translate.translate(
+        text,
+        targetLangCode,
+    );
+    return translation;
+}
 
 io.on('connection', (socket) => {
     console.log('Connected to socket:', socket.id);
+    const initialRequest: any = {
+        streamingConfig: {
+            audioConfig: {
+                audioEncoding: encoding,
+                sourceLanguageCode: 'en-US',
+                targetLanguageCode: 'th',
+            },
+            singleUtterance: true,
+        },
+        audioContent: null,
+    };
 
     function stopRecognitionStream() {
         let recognizeStream = streams[socket.id];
@@ -65,7 +79,7 @@ io.on('connection', (socket) => {
                     console.log(e);
                 }
             })
-            .on('data', ({ result, error }: { result: {
+            .on('data', async ({ result, error }: { result: {
                 textTranslationResult: {
                     translation: string,
                     isFinal: boolean,
@@ -75,21 +89,37 @@ io.on('connection', (socket) => {
                     console.log(error);
                     return;
                 }
-                socket.emit('speechData', result.textTranslationResult.translation);
+
+                let { translation } = result?.textTranslationResult ?? {};
+                if (useTranslate) {
+                    translation = await translateText(
+                        translation,
+                        initialRequest.streamingConfig.audioConfig.targetLanguageCode,
+                    );
+                    console.log(translation);
+                }
+                socket.emit('speechData', translation);
             });
         streams[socket.id] = stream;
     }
 
     socket.on('startStreaming', (data) => {
-        initialRequest.streamingConfig.audioConfig = {
-            audioEncoding: encoding,
-            sourceLanguageCode: data.source,
-            targetLanguageCode: data.target,
-        };
-        console.log('Started streaming', socket.id);
+        console.log('stared streaming', data);
+
+        const { streamingConfig: { audioConfig } } = initialRequest;
+        if (data?.source) audioConfig.sourceLanguageCode = data.source;
+        if (data?.target) audioConfig.targetLanguageCode = data.target;
+
+        const newRequest = JSON.parse(JSON.stringify(initialRequest));
+
+        if (!data?.source?.startsWith('en') && !data?.target?.startsWith('en')) {
+            useTranslate = true;
+            newRequest.streamingConfig.audioConfig.targetLanguageCode = 'en-US';
+        }
+
         startRecognitionStream();
         const recognizeStream = streams[socket.id];
-        recognizeStream?.write(initialRequest);
+        recognizeStream?.write(newRequest);
     });
 
     socket.on('stopStreaming', () => {

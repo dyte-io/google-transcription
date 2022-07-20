@@ -15,6 +15,7 @@
   "dependencies": {
     "@google-cloud/media-translation": "^3.0.0",
     "@google-cloud/speech": "^4.10.2",
+    "@google-cloud/translate": "^7.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
@@ -23,8 +24,8 @@
   "devDependencies": {
     "@types/express": "^4.17.13",
     "socket.io-client": "^4.5.1",
+    "socket.io-stream": "^0.9.1",
     "ts-node": "^10.8.2",
-    "ts-node-dev": "^2.0.0",
-    "socket.io-stream": "^0.9.1"
+    "ts-node-dev": "^2.0.0"
   }
 }
