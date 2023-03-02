@@ -29,6 +29,7 @@ type TranscriptionData = {
     id: string;
     name: string;
     transcript: string;
+    isPartialTranscript: string;
     date: Date;
 }
 

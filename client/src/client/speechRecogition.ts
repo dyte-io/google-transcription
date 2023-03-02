@@ -37,9 +37,30 @@ class GoogleSpeechRecognition {
             this.baseUrl,
         );
 
-        this.#participants.on('broadcastedMessage', (data) => {
+        this.#participants.on('broadcastedMessage', (data: { type: string, payload: TranscriptionData}) => {
             if (data.type !== 'newTranscription') return;
-            this.transcriptions.push(data.payload);
+
+            /**
+             * NOTE(ravindra-dyte): We want to give the effect of in-place transcription update
+             * Therefore we are removing previously in-progress line and putting the new one
+            */
+
+            // Remove all in-progress transcriptions of this user
+            const filteredTranscriptions: TranscriptionData[] = [];
+            this.transcriptions.forEach((transcription) => {
+                const shouldKeep = transcription.id !== data.payload?.id // allow from others
+            || ( // allow this peerId messages only if they are completed
+                transcription.id === data.payload?.id
+                    && !transcription.isPartialTranscript
+            );
+                if (shouldKeep) {
+                    filteredTranscriptions.push(transcription);
+                }
+            });
+
+            filteredTranscriptions.push(data.payload);
+            this.transcriptions = filteredTranscriptions;
+
             emitter().emit('transcription', data.payload);
         });
     }

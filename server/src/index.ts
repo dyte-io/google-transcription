@@ -20,9 +20,9 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3001;
-const projectId = 'long-victor-290219';
+const projectId = process.env.PROJECT_ID;
 const credentials = {
-    private_key: process.env.PRIVATE_KEY,
+    private_key: process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
     client_email: process.env.CLIENT_EMAIL,
 };
 
@@ -35,9 +35,8 @@ const translationClient = new SpeechTranslationServiceClient({
 
 const translate = new GoogleTranslate.Translate({ projectId, credentials });
 
-const streams: { [id: string]: any } = {};
+const streams: { [id: string]: ReturnType<SpeechTranslationServiceClient['streamingTranslateSpeech']> } = {};
 const encoding = 'linear16' as const;
-let useTranslate = false;
 
 async function translateText(text: string, targetLangCode: string) {
     const [translation] = await translate.translate(
@@ -49,24 +48,35 @@ async function translateText(text: string, targetLangCode: string) {
 
 io.on('connection', (socket) => {
     console.log('Connected to socket:', socket.id);
-    const initialRequest: any = {
+    let useTranslate = false;
+    const initialRequest: {
+        streamingConfig: {
+            audioConfig: {
+                audioEncoding: string,
+                sourceLanguageCode: string,
+                targetLanguageCode: string,
+            },
+            singleUtterance: boolean,
+        },
+        audioContent: null | string,
+    } = {
         streamingConfig: {
             audioConfig: {
                 audioEncoding: encoding,
                 sourceLanguageCode: 'en-US',
                 targetLanguageCode: 'th',
             },
-            singleUtterance: true,
+            singleUtterance: false,
         },
         audioContent: null,
     };
 
     function stopRecognitionStream() {
-        let recognizeStream = streams[socket.id];
+        const recognizeStream = streams[socket.id];
         if (recognizeStream) {
             recognizeStream.end();
         }
-        recognizeStream = null;
+        streams[socket.id] = null;
     }
 
     function startRecognitionStream() {
@@ -79,38 +89,49 @@ io.on('connection', (socket) => {
                     console.log(e);
                 }
             })
-            .on('data', async ({ result, error }: { result: {
-                textTranslationResult: {
-                    translation: string,
-                    isFinal: boolean,
-                }
-            }, error: any }) => {
-                if (error) {
-                    console.log(error);
-                    return;
-                }
+            .on(
+                'data',
+                async ({ result, error }: {
+                    result: {
+                        textTranslationResult: {
+                            translation: string,
+                            isFinal: boolean,
+                        }
+                    }, error: any,
+                }) => {
+                    if (error) {
+                        console.log(error);
+                        return;
+                    }
 
-                let { translation } = result?.textTranslationResult ?? {};
-                if (useTranslate) {
-                    translation = await translateText(
-                        translation,
-                        initialRequest.streamingConfig.audioConfig.targetLanguageCode,
-                    );
-                    console.log(translation);
-                }
-                socket.emit('speechData', translation);
-            });
+                    console.log('Received speech:: ', result?.textTranslationResult);
+                    let { translation } = result?.textTranslationResult ?? {};
+                    if (useTranslate) {
+                        translation = await translateText(
+                            translation,
+                            initialRequest.streamingConfig.audioConfig.targetLanguageCode,
+                        );
+                    }
+                    socket.emit('speechData', {
+                        transcript: translation,
+                        isPartialTranscript: !result?.textTranslationResult?.isFinal,
+                    });
+                },
+            );
         streams[socket.id] = stream;
     }
 
     socket.on('startStreaming', (data) => {
         console.log('stared streaming', data);
 
-        const { streamingConfig: { audioConfig } } = initialRequest;
-        if (data?.source) audioConfig.sourceLanguageCode = data.source;
-        if (data?.target) audioConfig.targetLanguageCode = data.target;
-
         const newRequest = JSON.parse(JSON.stringify(initialRequest));
+
+        if (data?.source) {
+            newRequest.streamingConfig.audioConfig.sourceLanguageCode = data.source;
+        }
+        if (data?.target) {
+            newRequest.streamingConfig.audioConfig.targetLanguageCode = data.target;
+        }
 
         if (!data?.source?.startsWith('en') && !data?.target?.startsWith('en')) {
             useTranslate = true;

@@ -24,8 +24,8 @@ const init = async () => {
         // Initialize speech client
         const speech = new GoogleSpeechRecognition({
             meeting,
-            target: 'es',
-            source: 'th',
+            target: 'hi',
+            source: 'en-US',
             baseUrl: 'http://localhost:3001',
         });
 
