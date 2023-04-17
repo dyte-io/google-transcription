@@ -37,6 +37,7 @@ This package provides audio transcriptions in various [languages](https://cloud.
 ## Getting Started
 ### Prerequisites
 - npm
+- A backend server URL, running https://github.com/dyte-in/google-transcription/tree/main/server
 ### Installation
 ```sh
 npm i @dytesdk/google-transcription
@@ -44,13 +45,13 @@ npm i @dytesdk/google-transcription
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-A speech object can be created using `GoogleSpeechRecognition` class.
+A speech object can be created using `DyteGoogleSpeechRecognition` class.
 ```ts
-import GoogleSpeechRecognition, { TranscriptionData } from '@dytesdk/google-transcription';
+import DyteGoogleSpeechRecognition from '@dytesdk/google-transcription';
 
-const speech = new GoogleSpeechRecognition({
+const speech = new DyteGoogleSpeechRecognition({
     meeting,
-    target: 'th',
+    target: 'hi',
     source: 'en-US',
     baseUrl: <backend-url>,
 });
@@ -58,6 +59,7 @@ const speech = new GoogleSpeechRecognition({
 
 speech.on('transcription', async (data) => {
     // ... do something with transcription
+    // console.log(speech.transcriptions);
 });
 
 speech.transcribe();

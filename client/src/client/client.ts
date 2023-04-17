@@ -19,10 +19,10 @@ export default class SocketClient {
             const transcriptionPayload: TranscriptionData = {
                 name: self.name,
                 id: self.id,
-                transcript: data,
+                transcript: data?.transcript,
+                isPartialTranscript: data?.isPartialTranscript,
                 date: new Date(),
             };
-            console.log(data, transcriptionPayload);
             participants.broadcastMessage('newTranscription', transcriptionPayload);
         });
 
