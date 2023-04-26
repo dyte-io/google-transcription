@@ -1,6 +1,6 @@
 {
     "name": "google-transcription",
-    "version": "2.0.1",
+    "version": "3.0.0",
     "description": "SDK for audio transcriptions.",
     "author": "https://github.com/dyte-in",
     "workspaces": [
