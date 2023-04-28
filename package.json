@@ -22,7 +22,8 @@
         "prepare": "is-ci || husky install",
         "start:client": "npm start -w client --if-present",
         "build:client:demo": "npm run build:demo -w client --if-present",
-        "test": "npm t --ws"
+        "test": "npm t --ws",
+        "publish": "npm publish --access public -w client"
     },
     "devDependencies": {
         "@commitlint/cli": "^16.2.1",
