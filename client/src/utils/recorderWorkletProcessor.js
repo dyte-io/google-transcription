@@ -61,17 +61,18 @@ class RecorderProcessor extends AudioWorkletProcessor {
         const buffer = this._bytesWritten < this.bufferSize
             ? this._buffer.slice(0, this._bytesWritten)
             : this._buffer;
-        const result = this.downsampleBuffer(buffer, 44100, 16000);
+        const result = this.downsampleBuffer(buffer, 16000);
         this.port.postMessage(result);
         this.initBuffer();
     }
 
-    downsampleBuffer(buffer, sampleRate, outSampleRate) {
+    downsampleBuffer(buffer, outSampleRate) {
         if (outSampleRate == sampleRate) {
             return buffer;
         }
         if (outSampleRate > sampleRate) {
-            throw 'downsampling rate show be smaller than original sample rate';
+            console.log('downsampling rate show be smaller than original sample rate');
+            return buffer;
         }
         const sampleRateRatio = sampleRate / outSampleRate;
         const newLength = Math.round(buffer.length / sampleRateRatio);
