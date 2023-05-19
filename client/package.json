@@ -31,14 +31,18 @@
     "build:demo": "vite build -c vite.demo.config.ts",
     "test": "jest --passWithNoTests"
   },
+  "peerDependencies": {
+    "@dytesdk/ui-kit": ">=1.14.0",
+    "@dytesdk/web-core": ">=0.28.0"
+  },
   "dependencies": {
-    "@dytesdk/ui-kit": "^1.14.0",
-    "@dytesdk/web-core": "^0.28.0",
     "events": "^3.3.0",
     "loglevel": "^1.8.0",
     "socket.io-client": "^4.5.1"
   },
   "devDependencies": {
-    "vite": "^2.9.13"
+    "vite": "^2.9.13",
+    "@dytesdk/ui-kit": "^1.50.1",
+    "@dytesdk/web-core": "^1.12.4"
   }
 }
