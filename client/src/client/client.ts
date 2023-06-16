@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { TranscriptionData } from '../types';
+import { GoogleSpeechRecognitionOptions, TranscriptionData } from '../types';
 
 // eslint-disable-next-line import/extensions, import/no-unresolved
 import recorderWorkerUrl from '../utils/recorderWorkletProcessor.js?url';
@@ -29,8 +29,15 @@ export default class SocketClient {
 
     #globalStream: MediaStream;
 
-    constructor(participants: any, self: any, baseUrl: string) {
-        this.#socket = io(baseUrl);
+    constructor(
+        participants: GoogleSpeechRecognitionOptions['meeting']['participants'],
+        self: GoogleSpeechRecognitionOptions['meeting']['self'],
+        baseUrl: string,
+    ) {
+        const socketUrl = new URL(baseUrl);
+        socketUrl.searchParams.append('userId', self.userId);
+        socketUrl.searchParams.append('customParticipantId', self.clientSpecificId);
+        this.#socket = io(socketUrl);
 
         this.#socket.on('speechData', (data) => {
             const transcriptionPayload: TranscriptionData = {
