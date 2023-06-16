@@ -1,5 +1,22 @@
 import { io, Socket } from 'socket.io-client';
-import { TranscriptionData } from '../types';
+import { GoogleSpeechRecognitionOptions, TranscriptionData } from '../types';
+
+// eslint-disable-next-line import/extensions, import/no-unresolved
+import recorderWorkerUrl from '../utils/recorderWorkletProcessor.js?url';
+
+async function createWorkletNode(
+    context: BaseAudioContext,
+    name: string,
+    url: string,
+) {
+    // ensure audioWorklet has been loaded
+    try {
+        return new AudioWorkletNode(context, name);
+    } catch (err) {
+        await context.audioWorklet.addModule(url);
+        return new AudioWorkletNode(context, name);
+    }
+}
 
 export default class SocketClient {
     #socket: Socket;
@@ -12,8 +29,15 @@ export default class SocketClient {
 
     #globalStream: MediaStream;
 
-    constructor(participants: any, self: any, baseUrl: string) {
-        this.#socket = io(baseUrl);
+    constructor(
+        participants: GoogleSpeechRecognitionOptions['meeting']['participants'],
+        self: GoogleSpeechRecognitionOptions['meeting']['self'],
+        baseUrl: string,
+    ) {
+        const socketUrl = new URL(baseUrl);
+        socketUrl.searchParams.append('userId', self.userId);
+        socketUrl.searchParams.append('customParticipantId', self.clientSpecificId);
+        this.#socket = io(socketUrl);
 
         this.#socket.on('speechData', (data) => {
             const transcriptionPayload: TranscriptionData = {
@@ -45,16 +69,10 @@ export default class SocketClient {
             latencyHint: 'interactive',
         });
 
-        await this.#context.audioWorklet.addModule('https://cdn.jsdelivr.net/npm/@dytesdk/google-transcription@0.0.5/dist/recorderWorkletProcessor.js');
-        this.#context.resume();
-
         this.#globalStream = new MediaStream();
         this.#globalStream.addTrack(audioTrack);
         this.#input = this.#context.createMediaStreamSource(this.#globalStream);
-        this.#processor = new window.AudioWorkletNode(
-            this.#context,
-            'recorder.worklet',
-        );
+        this.#processor = await createWorkletNode(this.#context, 'recorder.worklet', recorderWorkerUrl);
         this.#processor.connect(this.#context.destination);
         this.#context.resume();
         this.#input.connect(this.#processor);
