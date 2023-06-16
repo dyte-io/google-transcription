@@ -31,7 +31,7 @@ export default class SocketClient {
 
     constructor(participants: any, self: any, baseUrl: string) {
         const socketUrl = new URL(baseUrl);
-        socketUrl.searchParams.append('speakerId', self.userId);
+        socketUrl.searchParams.append('userId', self.userId);
         this.#socket = io(socketUrl);
 
         this.#socket.on('speechData', (data) => {
