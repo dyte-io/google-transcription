@@ -30,7 +30,9 @@ export default class SocketClient {
     #globalStream: MediaStream;
 
     constructor(participants: any, self: any, baseUrl: string) {
-        this.#socket = io(baseUrl);
+        const socketUrl = new URL(baseUrl);
+        socketUrl.searchParams.append('speakerId', self.userId);
+        this.#socket = io(socketUrl);
 
         this.#socket.on('speechData', (data) => {
             const transcriptionPayload: TranscriptionData = {
