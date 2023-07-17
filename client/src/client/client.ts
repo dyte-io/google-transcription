@@ -34,10 +34,7 @@ export default class SocketClient {
         self: GoogleSpeechRecognitionOptions['meeting']['self'],
         baseUrl: string,
     ) {
-        const socketUrl = new URL(baseUrl);
-        socketUrl.searchParams.append('userId', self.userId);
-        socketUrl.searchParams.append('customParticipantId', self.clientSpecificId);
-        this.#socket = io(socketUrl);
+        this.#socket = io(`${baseUrl}?userId=${self.userId}&customParticipantId=${self.clientSpecificId}`);
 
         this.#socket.on('speechData', (data) => {
             const transcriptionPayload: TranscriptionData = {
@@ -82,15 +79,13 @@ export default class SocketClient {
         };
     }
 
-    stopRecording() {
-        this.#socket.emit('stopStreaming', '');
-
+    async stopRecording() {
+        this.#socket?.emit('stopStreaming', '');
         this.#input?.disconnect(this.#processor);
         this.#processor?.disconnect(this.#context.destination);
-        this.#context?.close().then(() => {
-            this.#input = null;
-            this.#processor = null;
-            this.#context = null;
-        });
+        await this.#context?.close();
+        this.#input = null;
+        this.#processor = null;
+        this.#context = null;
     }
 }

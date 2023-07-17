@@ -72,7 +72,11 @@ class GoogleSpeechRecognition {
     async transcribe() {
         const handleAudioStream = async () => {
             if (this.#self.audioEnabled) {
-                this.#socketClient.startRecording(this.#self.audioTrack, this.source, this.target);
+                // Stop previous audio stream if any
+                await this.#socketClient.stopRecording();
+                await this
+                    .#socketClient
+                    .startRecording(this.#self.audioTrack, this.source, this.target);
                 return;
             }
 
