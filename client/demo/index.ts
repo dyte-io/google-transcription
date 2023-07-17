@@ -6,15 +6,15 @@ defineCustomElements();
 
 const init = async () => {
     try {
-        const roomName = 'cgwpud-uszikg';
+        const roomName = 'cahdlw-gpggck';
         const { authToken } = await (
-            await fetch('https://api.staging.dyte.in/auth/anonymous')
+            await fetch('https://api.cluster.dyte.in/auth/anonymous')
         ).json();
 
         const meeting = await DyteClient.init({
             authToken,
             roomName,
-            apiBase: 'https://api.staging.dyte.in',
+            apiBase: 'https://api.cluster.dyte.in',
             defaults: {
                 audio: false,
                 video: false,
