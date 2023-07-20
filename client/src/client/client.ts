@@ -19,7 +19,7 @@ async function createWorkletNode(
 }
 
 export default class SocketClient {
-    #socket: Socket;
+    socket: Socket;
 
     #context: AudioContext;
 
@@ -34,9 +34,9 @@ export default class SocketClient {
         self: GoogleSpeechRecognitionOptions['meeting']['self'],
         baseUrl: string,
     ) {
-        this.#socket = io(`${baseUrl}?userId=${self.userId}&customParticipantId=${self.clientSpecificId}`);
+        this.socket = io(`${baseUrl}?userId=${self.userId}&customParticipantId=${self.clientSpecificId}`);
 
-        this.#socket.on('speechData', (data) => {
+        this.socket.on('speechData', (data) => {
             const transcriptionPayload: TranscriptionData = {
                 name: self.name,
                 id: self.id,
@@ -48,16 +48,16 @@ export default class SocketClient {
         });
 
         window.onbeforeunload = () => {
-            this.#socket.emit('endGoogleCloudStream', '');
+            this.socket.emit('endGoogleCloudStream', '');
         };
     }
 
     microphoneProcess(buffer: any) {
-        this.#socket.emit('audioStream', buffer);
+        this.socket.emit('audioStream', buffer);
     }
 
     async startRecording(audioTrack: MediaStreamTrack, source: string, target: string) {
-        this.#socket.emit('startStreaming', {
+        this.socket.emit('startStreaming', {
             source,
             target,
         });
@@ -80,7 +80,7 @@ export default class SocketClient {
     }
 
     async stopRecording() {
-        this.#socket?.emit('stopStreaming', '');
+        this.socket?.emit('stopStreaming', '');
         this.#input?.disconnect(this.#processor);
         this.#processor?.disconnect(this.#context.destination);
         await this.#context?.close();

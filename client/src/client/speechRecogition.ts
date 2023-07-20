@@ -19,7 +19,7 @@ class GoogleSpeechRecognition {
 
     #self: DyteSelf;
 
-    #socketClient: SocketClient;
+    socketClient: SocketClient;
 
     #participants: DyteParticipants;
 
@@ -31,7 +31,7 @@ class GoogleSpeechRecognition {
         this.source = options.source ?? 'en';
         this.target = options.target ?? 'th';
 
-        this.#socketClient = new SocketClient(
+        this.socketClient = new SocketClient(
             this.#participants,
             this.#self,
             this.baseUrl,
@@ -73,14 +73,14 @@ class GoogleSpeechRecognition {
         const handleAudioStream = async () => {
             if (this.#self.audioEnabled) {
                 // Stop previous audio stream if any
-                await this.#socketClient.stopRecording();
+                await this.socketClient.stopRecording();
                 await this
-                    .#socketClient
+                    .socketClient
                     .startRecording(this.#self.audioTrack, this.source, this.target);
                 return;
             }
 
-            this.#socketClient.stopRecording();
+            this.socketClient.stopRecording();
         };
 
         handleAudioStream();
