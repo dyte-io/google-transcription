@@ -67,9 +67,6 @@ class RecorderProcessor extends AudioWorkletProcessor {
     }
 
     downsampleBuffer(buffer, outSampleRate) {
-        if (outSampleRate == sampleRate) {
-            return buffer;
-        }
         if (outSampleRate > sampleRate) {
             console.log('downsampling rate show be smaller than original sample rate');
             return buffer;
