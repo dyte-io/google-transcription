@@ -6,15 +6,19 @@ defineCustomElements();
 
 const init = async () => {
     try {
-        const roomName = 'cahdlw-gpggck';
-        const { authToken } = await (
-            await fetch('https://api.cluster.dyte.in/auth/anonymous')
-        ).json();
+        const params = new URLSearchParams(window.location.search);
+        const roomName = params.get('roomName') || '';
+        const authToken = params.get('authToken') || '';
+
+        if (!authToken || (roomName && !authToken)) {
+            alert('Please pass authToken (and roomName, if you are using v1 APIs) in query params');
+            return;
+        }
 
         const meeting = await DyteClient.init({
             authToken,
             roomName,
-            apiBase: 'https://api.cluster.dyte.in',
+            apiBase: 'https://api.dyte.io',
             defaults: {
                 audio: false,
                 video: false,

@@ -79,7 +79,20 @@ Modify port, if needed.
 npm run dev
 ```
 
-9. Now go to browser and open localhost:3000 (Change this, if you have modified port in .env of client)
+9. Now open the following URL in browser. (Change the port in the URL, if you have modified port in .env of client)
+
+```text
+http://localhost:3000/?authToken=PUT_DYTE_PARTICIPANT_AUTH_TOKEN_HERE
+
+```
+
+In case you are still using v1 meetings, please use the following URL instead.
+
+```text
+http://localhost:3000/?authToken=PUT_DYTE_PARTICIPANT_AUTH_TOKEN_HERE&roomName=PUT_DYTE_ROOM_NAME_HERE
+```
+
+Once the Dyte UI is loaded, please turn on the Mic and grant permissions, if asked. Post that, try speaking sentences in English (default) to see the transcriptions.
 
 You would see the Dyte meeting loading on this page.
 
@@ -88,5 +101,3 @@ Turn the Mic on and Start Speaking and you should ideally start seeing transcrip
 10. Go through the client/demo/index.ts & server folder and take what is needed to integrate it in your product.
 
 <b>Note:</b> Though this package takes the complexity away from you, We recommend that you put your own security practices & robustness around it and not treat these samples as production-grade copy-paste solutions.
-
-
