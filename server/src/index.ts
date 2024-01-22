@@ -1,11 +1,9 @@
-/* eslint-disable no-restricted-syntax */
 import dotenv from 'dotenv';
 import express from 'express';
-// import speech from '@google-cloud/speech';
 import http from 'http';
 import { Server } from 'socket.io';
-import { SpeechTranslationServiceClient } from '@google-cloud/media-translation';
 import { v2 as GoogleTranslate } from '@google-cloud/translate';
+import { v1 as GoogleSpeech } from '@google-cloud/speech';
 
 dotenv.config();
 
@@ -29,14 +27,13 @@ const credentials = {
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const translationClient = new SpeechTranslationServiceClient({
+const speechClient = new GoogleSpeech.SpeechClient({
     credentials,
 });
 
 const translate = new GoogleTranslate.Translate({ projectId, credentials });
 
-const streams: { [id: string]: ReturnType<SpeechTranslationServiceClient['streamingTranslateSpeech']> } = {};
-const encoding = 'linear16' as const;
+const streams: { [id: string]: ReturnType<GoogleSpeech.SpeechClient['streamingRecognize']> } = {};
 
 async function translateText(text: string, targetLangCode: string) {
     const [translation] = await translate.translate(
@@ -46,29 +43,26 @@ async function translateText(text: string, targetLangCode: string) {
     return translation;
 }
 
+type StartStreamingRequest = {
+    config: {
+        encoding: 'LINEAR16',
+        sampleRateHertz: number,
+        sourceLanguageCode: string,
+        targetLanguageCode: string,
+    },
+    singleUtterance: false,
+}
+
 io.on('connection', (socket) => {
     console.log('Connected to socket:', socket.id);
-    let useTranslate = false;
-    const initialRequest: {
-        streamingConfig: {
-            audioConfig: {
-                audioEncoding: string,
-                sourceLanguageCode: string,
-                targetLanguageCode: string,
-            },
-            singleUtterance: boolean,
+    const startStreamingRequest: StartStreamingRequest = {
+        config: {
+            encoding: 'LINEAR16' as const,
+            sampleRateHertz: 16000,
+            sourceLanguageCode: 'en-US',
+            targetLanguageCode: 'hi',
         },
-        audioContent: null | string,
-    } = {
-        streamingConfig: {
-            audioConfig: {
-                audioEncoding: encoding,
-                sourceLanguageCode: 'en-US',
-                targetLanguageCode: 'th',
-            },
-            singleUtterance: false,
-        },
-        audioContent: null,
+        singleUtterance: false,
     };
 
     function stopRecognitionStream() {
@@ -79,42 +73,55 @@ io.on('connection', (socket) => {
         streams[socket.id] = null;
     }
 
-    function startRecognitionStream() {
-        const stream = translationClient
-            .streamingTranslateSpeech()
+    async function startRecognitionStream() {
+        const stream = await speechClient.streamingRecognize({
+            config: {
+                encoding: startStreamingRequest.config.encoding,
+                languageCode: startStreamingRequest.config.sourceLanguageCode,
+                sampleRateHertz: startStreamingRequest.config.sampleRateHertz,
+            },
+            singleUtterance: false,
+        })
             .on('error', (e: any) => {
+                console.log('Websocket Error:: ', e);
                 if (e.code && e.code === 4) {
                     console.log('Streaming translation reached its deadline.');
-                } else {
-                    console.log(e);
                 }
             })
             .on(
                 'data',
-                async ({ result, error }: {
-                    result: {
-                        textTranslationResult: {
-                            translation: string,
-                            isFinal: boolean,
-                        }
-                    }, error: any,
+                async ({ results, error }: {
+                    results: {
+                        alternatives: {'words':string[], 'transcript':string, 'confidence':number}[],
+                        isFinal: true,
+                        stability: number,
+                        resultEndTime: { seconds: string, nanos: number },
+                        channelTag: number,
+                        languageCode: string,
+                      }[],
+                      error: null,
                 }) => {
                     if (error) {
-                        console.log(error);
+                        console.log('Error in data listener:: ', error);
                         return;
                     }
 
-                    console.log('Received speech:: ', result?.textTranslationResult);
-                    let { translation } = result?.textTranslationResult ?? {};
-                    if (useTranslate) {
-                        translation = await translateText(
-                            translation,
-                            initialRequest.streamingConfig.audioConfig.targetLanguageCode,
+                    console.log('Received speech:: ', JSON.stringify(results[0]?.alternatives));
+                    const transcription = results[0]?.alternatives[0].transcript;
+                    let translatedText = transcription;
+                    if (
+                        startStreamingRequest.config.sourceLanguageCode
+                        !== startStreamingRequest.config.targetLanguageCode
+                    ) {
+                        translatedText = await translateText(
+                            transcription,
+                            startStreamingRequest.config.targetLanguageCode,
                         );
+                        console.log('Translated text::', translatedText);
                     }
                     socket.emit('speechData', {
-                        transcript: translation,
-                        isPartialTranscript: !result?.textTranslationResult?.isFinal,
+                        transcript: translatedText,
+                        isPartialTranscript: !results[0]?.isFinal,
                     });
                 },
             );
@@ -124,23 +131,17 @@ io.on('connection', (socket) => {
     socket.on('startStreaming', (data) => {
         console.log('stared streaming', data);
 
-        const newRequest = JSON.parse(JSON.stringify(initialRequest));
-
         if (data?.source) {
-            newRequest.streamingConfig.audioConfig.sourceLanguageCode = data.source;
+            startStreamingRequest.config.sourceLanguageCode = data.source;
+            startStreamingRequest.config.targetLanguageCode = data.source;
         }
         if (data?.target) {
-            newRequest.streamingConfig.audioConfig.targetLanguageCode = data.target;
-        }
-
-        if (!data?.source?.startsWith('en') && !data?.target?.startsWith('en')) {
-            useTranslate = true;
-            newRequest.streamingConfig.audioConfig.targetLanguageCode = 'en-US';
+            startStreamingRequest.config.targetLanguageCode = data.target;
         }
 
         startRecognitionStream();
         const recognizeStream = streams[socket.id];
-        recognizeStream?.write(newRequest);
+        recognizeStream?.write(startStreamingRequest);
     });
 
     socket.on('stopStreaming', () => {
@@ -150,10 +151,9 @@ io.on('connection', (socket) => {
 
     socket.on('audioStream', (buffer: any) => {
         const recognizeStream = streams[socket.id];
-        recognizeStream?.write({
-            streamingConfig: initialRequest.streamingConfig,
-            audioContent: buffer.toString('base64'),
-        });
+        if (recognizeStream?.writable && !recognizeStream?.destroyed) {
+            recognizeStream?.write(buffer);
+        }
     });
 });
 
