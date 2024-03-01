@@ -14,13 +14,13 @@
 Dyte is a technology company specializing in real-time communication solutions. Our products are designed to enable seamless and efficient video interactions in various applications, ranging from virtual meetings to interactive live streaming. The offerings are known for their robust performance, scalability, and ease of integration.
 
 ## About This Repository
-This package provides plug and play transcriptions.
+This package provides plug-and-play transcriptions.
 
 # Prerequisites
 
-This package uses Google transcriptions and translations which are paid services from Google.
+This package uses Google Speech-to-Text and translation services, which are paid services from Google.
 
-Therefore, You must have an service account in GCP (Google Cloud Platform) account with a project configured that allows Google Media Translations and Google Translations API.
+Therefore, You must have a project & a service account in GCP (Google Cloud Platform). Make sure that the service account allows Google Speech-to-Text and Google Translation API.
 
 Once done, download the keys for the service account.
 
@@ -42,7 +42,7 @@ It would look like:
 
 ```
 
-<b>Note:</b> Without having this, it would not be feasible to use with package.
+<b>Note:</b> Without having this, it would not be feasible to use with the package.
 
 
 # How to use
@@ -58,7 +58,7 @@ cp .env.example .env
 
 Open the .env in your choice of Text File Editor and Edit it and Save it.
 
-<b>Note:</b> PRIVATE_KEY should be in a single line. Try picking value from the service account's key's json file as is.
+<b>Note:</b> PRIVATE_KEY should be in a single line. Try picking value from the service account's key's JSON file as is.
 
 3. Install packages
 ```sh
@@ -69,9 +69,9 @@ npm install
 npm run dev
 ```
 
-If sucessful, you would see the confirmation in Terminal that it is running on localhost:3001 or the PORT specified in the .env file.
+If successful, you will see the confirmation in Terminal that it is running on localhost:3001 or the PORT specified in the .env file.
 
-5. In a new terminal, go to the client folder from root of this repository
+5. In a new terminal, go to the client folder from the root of this repository
 
 ```sh
 cd client
@@ -86,14 +86,14 @@ npm install
 ```sh
 cp .env.example .env
 ```
-Modify port, if needed.
+Modify the port, if needed.
 
 8. Run the client
 ```sh
 npm run dev
 ```
 
-9. Now open the following URL in browser. (Change the port in the URL, if you have modified port in .env of client)
+9. Now open the following URL in a browser. (Change the port in the URL, if you have modified the port in .env of the client)
 
 ```text
 http://localhost:3000/?authToken=PUT_DYTE_PARTICIPANT_AUTH_TOKEN_HERE
@@ -108,10 +108,10 @@ http://localhost:3000/?authToken=PUT_DYTE_PARTICIPANT_AUTH_TOKEN_HERE&roomName=P
 
 Once the Dyte UI is loaded, please turn on the Mic and grant permissions, if asked. Post that, try speaking sentences in English (default) to see the transcriptions.
 
-You would see the Dyte meeting loading on this page.
+You will see the Dyte meeting loading on this page.
 
 Turn the Mic on and Start Speaking and you should ideally start seeing transcriptions right away.
 
-10. Go through the client/demo/index.ts & server folder and take what is needed to integrate it in your product.
+10. Go through the client/demo/index.ts & server folder and take what is needed to integrate it into your product.
 
 <b>Note:</b> Though this package takes the complexity away from you, We recommend that you put your own security practices & robustness around it and not treat these samples as production-grade copy-paste solutions.
