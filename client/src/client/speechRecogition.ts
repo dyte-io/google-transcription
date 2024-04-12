@@ -37,8 +37,9 @@ class GoogleSpeechRecognition {
             this.baseUrl,
         );
 
-        this.#participants.on('broadcastedMessage', (data: { type: string, payload: TranscriptionData}) => {
+        this.#participants.on('broadcastedMessage', (data) => {
             if (data.type !== 'newTranscription') return;
+            const transcriptionData = data.payload as TranscriptionData;
 
             /**
              * NOTE(ravindra-dyte): We want to give the effect of in-place transcription update
@@ -48,9 +49,9 @@ class GoogleSpeechRecognition {
             // Remove all in-progress transcriptions of this user
             const filteredTranscriptions: TranscriptionData[] = [];
             this.transcriptions.forEach((transcription) => {
-                const shouldKeep = transcription.id !== data.payload?.id // allow from others
+                const shouldKeep = transcription.id !== transcriptionData?.id // allow from others
             || ( // allow this peerId messages only if they are completed
-                transcription.id === data.payload?.id
+                transcription.id === transcriptionData?.id
                     && !transcription.isPartialTranscript
             );
                 if (shouldKeep) {
@@ -58,10 +59,10 @@ class GoogleSpeechRecognition {
                 }
             });
 
-            filteredTranscriptions.push(data.payload);
+            filteredTranscriptions.push(transcriptionData);
             this.transcriptions = filteredTranscriptions;
 
-            emitter().emit('transcription', data.payload);
+            emitter().emit('transcription', transcriptionData);
         });
     }
 
