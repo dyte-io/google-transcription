@@ -1,6 +1,6 @@
 {
   "name": "@dytesdk/google-transcription",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Package for audio transcriptions using Google Media Translation APIs.",
   "author": "https://github.com/dyte-in",
   "types": "./types/index.d.ts",
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "vite": "^2.9.13",
-    "@dytesdk/ui-kit": "^1.50.1",
-    "@dytesdk/web-core": "^1.12.4"
+    "@dytesdk/ui-kit": "^1.66.1",
+    "@dytesdk/web-core": "^1.31.0"
   }
 }
