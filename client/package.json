@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "vite": "^2.9.13",
-    "@dytesdk/ui-kit": "^1.50.1",
-    "@dytesdk/web-core": "^1.12.4"
+    "@dytesdk/ui-kit": "^1.66.1",
+    "@dytesdk/web-core": "^1.31.0"
   }
 }
